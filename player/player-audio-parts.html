@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odtwarzacz Audio</title>
+</head>
+<body>
+  <h1>Odtwarzacz Audio</h1>
+  <button id="playButton">Odtwórz</button>
+  <p id="status">Status: Gotowy</p>
+
+  <script>
+    // Pobieranie wartości endpoint i token z parametrów URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const endpointUrl = urlParams.get('endpoint');
+    const token = urlParams.get('token');
+
+    let audioParts = [];
+    let currentPartIndex = 0;
+    let audioElement;
+
+    if (!endpointUrl || !token) {
+      document.getElementById('status').innerText = 'Brak endpointu lub tokenu';
+    }
+
+    // Funkcja do pobrania listy części audio z endpointu
+    async function fetchAudioParts() {
+      const response = await fetch(endpointUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}` // Użycie tokenu z queryParameters
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        audioParts = data.audioParts;
+      } else {
+        document.getElementById('status').innerText = 'Błąd pobierania danych';
+      }
+    }
+
+    // Funkcja do odtwarzania audio sekwencyjnie
+    function playAudioParts() {
+      if (currentPartIndex < audioParts.length) {
+        const currentAudioUrl = audioParts[currentPartIndex];
+
+        // Tworzenie elementu audio dla każdej części
+        audioElement = new Audio(currentAudioUrl);
+        document.getElementById('status').innerText = `Odtwarzanie części ${currentPartIndex + 1} z ${audioParts.length}`;
+
+        audioElement.play();
+
+        // Po zakończeniu części przechodzi do następnej
+        audioElement.addEventListener('ended', () => {
+          currentPartIndex++;
+          playAudioParts(); // Wywołanie ponowne funkcji dla kolejnej części
+        });
+
+      } else {
+        // Reset po zakończeniu całego odtwarzania
+        document.getElementById('status').innerText = 'Odtwarzanie zakończone';
+        currentPartIndex = 0;
+      }
+    }
+
+    // Funkcja do obsługi przycisku odtwarzania
+    document.getElementById('playButton').addEventListener('click', async () => {
+      if (audioParts.length === 0) {
+        await fetchAudioParts();
+      }
+      playAudioParts();
+    });
+  </script>
+</body>
+</html>

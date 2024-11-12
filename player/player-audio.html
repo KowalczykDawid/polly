@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Player</title>
+</head>
+<body>
+  <div style="text-align: center;">
+    <audio id="audioPlayer" controls>
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <script>
+    // Funkcja do pobrania parametru URL z query
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // Pobierz URL z parametru query i ustaw jako źródło audio
+    const audioUrl = getQueryParam('audioUrl');
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    if (audioUrl) {
+      audioPlayer.src = audioUrl;
+    } else {
+      document.body.innerHTML = "<p>Nie podano URL do pliku audio.</p>";
+    }
+  </script>
+</body>
+</html>
